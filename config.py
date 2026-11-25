@@ -19,7 +19,7 @@ def get_config():
     parser.add_argument('--d_conv_dim', type=int, default=32, help='number of conv filters in the first layer of D')
     parser.add_argument('--shuffle', type=str, default=True, help='shuffle when load dataset')
     parser.add_argument('--drop_last', type=str2bool, default=True, help=' drop the last incomplete batch')
-    parser.add_argument('--version', type=str, default='UEGAN-FiveK', help='UEGAN')
+    parser.add_argument('--version', type=str, default='DWRGAN-FiveK', help='UEGAN')
     parser.add_argument('--init_type', type=str, default='orthogonal', help='normal|xavier|kaiming|orthogonal')
     parser.add_argument('--adv_input',type=str2bool, default=True, help='whether discriminator input')
     parser.add_argument('--d_use_sn', type=str2bool, default=True, help='whether use spectral normalization in D')
@@ -58,14 +58,14 @@ def get_config():
     parser.add_argument('--val_each_epochs', type=int, default=2, help='validate the model every time after training these epochs')
 
     # Directories.
-    parser.add_argument('--train_img_dir', type=str, default='./data/LOLv2/train') # LOL  fivek
-    parser.add_argument('--val_img_dir', type=str, default='./data/LOLv2/val')
-    # parser.add_argument('--test_img_dir', type=str, default='./data/SICE/test')
-    parser.add_argument('--test_img_dir', type=str, default=r'D:\image_enhance\code\UEGAN-master\UEGAN-master\data\unsquare_images')
+    parser.add_argument('--train_img_dir', type=str, default='./data/fivek/train') # LOL  fivek
+    parser.add_argument('--val_img_dir', type=str, default='./data/fivek/val')
+    
+    parser.add_argument('--test_img_dir', type=str, default=r'./data/fivek/test')
     parser.add_argument('--save_root_dir', type=str, default='./results')
-    parser.add_argument('--val_label_dir', type=str, default='./data/SICE/val/label/')
-    parser.add_argument('--test_label_dir', type=str, default=r'D:\image_enhance\code\UEGAN-master\UEGAN-master\data\unsquare_images\label')
-    # parser.add_argument('--test_label_dir', type=str, default='./data/SICE/test/label/')
+    parser.add_argument('--val_label_dir', type=str, default='./data/fivek/val/label/')
+    parser.add_argument('--test_label_dir', type=str, default='./data/fivek/test/label')
+    
     parser.add_argument('--model_save_path', type=str, default='models')
     parser.add_argument('--sample_path', type=str, default='samples')
     parser.add_argument('--log_path', type=str, default='logs')
