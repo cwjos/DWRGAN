@@ -80,14 +80,14 @@ This script will create a folder named ```./results``` in which the resulting ar
 - The PSNR results will be saved to here: ```./results/psnr_val_results``` (including PSNR for each valiaded epoch and the summary)
 - The SSIM results will be saved to here: ```./results/ssim_val_results``` (including SSIM for each valiaded epoch and the summary)
 - The NIMA results will be saved to here: ```./results/nima_val_results``` (including NIMA for each valiaded epoch and the summary)
-- The training logs will be saved to here: ```./results/UEGAN-FiveK/logs```
-- The models will be saved to here: ```./results/UEGAN-FiveK/models```
+- The training logs will be saved to here: ```./results/DWRGAN-FiveK/logs```
+- The models will be saved to here: ```./results/DWRGAN-FiveK/models```
 - The intermediate results will be saved to here: ```./results/DWRGAN-FiveK/samples```
 - The validation results will be saved to here: ```./results/DWRGAN-FiveK/validation```
 - The test results will be saved to here: ```./results/DWRGAN-FiveK/test```
 
 
-To view training results and loss plots, run ```tensorboard --logdir=results/UEGAN-FiveK/logs```, and click the URL accordingly (For example, http://nzk-ub:6007/).
+To view training results and loss plots, run ```tensorboard --logdir=results/DWRGAN-FiveK/logs```, and click the URL accordingly (For example, http://nzk-ub:6007/).
 
 The summary of PSNR test results will be save to ```./results/psnr_val_results/PSNR_total_results_epoch_avgpsnr.csv```. Find the best epoch in the last line of ```PSNR_total_results_epoch_avgpsnr.csv```.
 
