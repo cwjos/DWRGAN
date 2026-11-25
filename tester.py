@@ -33,7 +33,7 @@ class Tester(object):
         self.sample_path = os.path.join(args.save_root_dir, args.version, args.sample_path)
         self.log_path = os.path.join(args.save_root_dir, args.version, args.log_path)
         self.test_result_path = os.path.join(args.save_root_dir, args.version, args.test_result_path)  #results/UEGAN-FiveK/test
-        # self.test_result_path = r"/compared_models/EnlightenGAN/EnlightenGAN-master/test"
+    
 
         # Build the model and tensorboard.
         self.build_model()
@@ -67,13 +67,14 @@ class Tester(object):
                 input = next(self.fetcher_test)
                 test_real_raw, test_name = input.img_raw, input.img_name
 
-                # test_fake_exp = self.G(test_real_raw)
+                test_fake_exp = self.G(test_real_raw)
                 for i in range(0, denorm(test_real_raw.data).size(0)):
-                    save_imgs = denorm(test_real_raw.data)[i:i + 1,:,:,:]
+                    save_imgs = denorm(test_fake_exp.data)[i:i + 1,:,:,:]
                     save_image(save_imgs, os.path.join(test_save_path, '{:s}_{:0>3.2f}_testFakeExp.png'.format(test_name[i], self.args.pretrained_model)))
 
-                    # save_imgs_compare = torch.cat([denorm(test_real_raw.data)[i:i + 1,:,:,:], denorm(test_fake_exp.data)[i:i + 1,:,:,:]], 3)
-                    # save_image(save_imgs_compare, os.path.join(test_compare_save_path, '{:s}_{:0>3.2f}_testRealRaw_testFakeExp.png'.format(test_name[i], self.args.pretrained_model)))
+                    save_imgs_compare = torch.cat([denorm(test_real_raw.data)[i:i + 1,:,:,:], denorm(test_fake_exp.data)[i:i + 1,:,:,:]], 3)
+                    save_image(save_imgs_compare, os.path.join(test_compare_save_path, '{:s}_{:0>3.2f}_testRealRaw_testFakeExp.png'.format(test_name[i], self.args.pretrained_model)))
+
 
                 elapsed = time.time() - start_time
                 elapsed = str(datetime.timedelta(seconds=elapsed))
@@ -86,90 +87,24 @@ class Tester(object):
 
                 pbar.update(1)
 
-            #     if self.args.use_tensorboard:
-            #         for tag, images in test.items():
-            #             self.logger.images_summary(tag, images, test_step + 1)
-            #
-            # if self.args.is_test_nima:
-            #     self.nima_result_save_path = './results/nima_test_results_HTGAN_SICE_2/'
-            #     curr_nima = calc_nima(test_save_path, self.nima_result_save_path,  self.args.pretrained_model)
-            #     print("====== Avg. NIMA: {:>.4f} ======".format(curr_nima))
-            #
-            #     # self.lpips_result_save_path = './results/lpips_test_results/'
-            #     # curr_lpips = calc_lpips(test_save_path, self.args.test_label_dir, self.lpips_result_save_path, self.args.pretrained_model)
-            #     # print("====== Avg. LPIPS: {:>.4f} ======".format(curr_lpips))
-            #
-            # if self.args.is_test_psnr_ssim:
-            #     self.psnr_save_path = './results/psnr_test_results_HTGAN_HTGAN_SICE_2/'
-            #     curr_psnr = calc_psnr(test_save_path, self.args.test_label_dir, self.psnr_save_path, self.args.pretrained_model)
-            #     print("====== Avg. PSNR: {:>.4f} dB ======".format(curr_psnr))
-            #
-            #     self.ssim_save_path = './results/ssim_test_results_HTGAN_HTGAN_SICE_2/'
-            #     curr_ssim = calc_ssim(test_save_path, self.args.test_label_dir, self.ssim_save_path, self.args.pretrained_model)
-            #     print("====== Avg. SSIM: {:>.4f}  ======".format(curr_ssim))
+                if self.args.use_tensorboard:
+                    for tag, images in test.items():
+                        self.logger.images_summary(tag, images, test_step + 1)
+            
+            if self.args.is_test_nima:
+                self.nima_result_save_path = './results/nima_test_results/'
+                curr_nima = calc_nima(test_save_path, self.nima_result_save_path,  self.args.pretrained_model)
+                print("====== Avg. NIMA: {:>.4f} ======".format(curr_nima))      
+            
+             if self.args.is_test_psnr_ssim:
+                self.psnr_save_path = './results/psnr_test_results/' 
+                curr_psnr = calc_psnr(test_save_path, self.args.test_label_dir, self.psnr_save_path, self.args.pretrained_model)
+                print("====== Avg. PSNR: {:>.4f} dB ======".format(curr_psnr))
 
-    # def test(self):
-    #     """ Test UEGAN ."""
-    #     # self.load_pretrained_model(self.args.pretrained_model)
-    #     start_time = time.time()
-    #     test_start = 0
-    #     test_total_steps = len(self.loaders.tes)
-    #     self.fetcher_test = InputFetcher(self.loaders.tes)
-    #
-    #     test = {}
-    #     test_save_path = self.test_result_path + '/' + 'test_results_square'
-    #     # test_save_path = self.test_result_path + '/' + 'test_results_square'
-    #     test_compare_save_path = self.test_result_path + '/' + 'test_compare_square'
-    #
-    #     if not os.path.exists(test_save_path):
-    #         os.makedirs(test_save_path)
-    #     if not os.path.exists(test_compare_save_path):
-    #         os.makedirs(test_compare_save_path)
-    #
-    #     # pbar = tqdm(total=(test_total_steps - test_start), desc='Test epoches', position=test_start)
-    #     # pbar.write("============================== Start testing ==============================")
-    #     with torch.no_grad():
-    #         for test_step in range(test_start, test_total_steps):
-    #             input = next(self.fetcher_test)
-    #             test_real_raw, test_name = input.img_raw, input.img_name
-    #
-    #             for i in range(0, denorm(test_real_raw.data).size(0)):
-    #                 # save_imgs = denorm(test_fake_exp.data)[i:i + 1,:,:,:]
-    #                 save_imgs = denorm(test_real_raw.data)[i:i + 1,:,:,:]
-    #                 save_image(save_imgs, os.path.join(test_save_path, '{:s}_{:0>3.2f}_testFakeExp.png'.format(test_name[i], self.args.pretrained_model)))
-    #                 # save_image(save_imgs, os.path.join(test_save_path, '{:s}.png'.format(test_name[i])))
-    #
-    #                 # save_imgs_compare = torch.cat([denorm(test_real_raw.data)[i:i + 1,:,:,:], denorm(test_real_raw.data)[i:i + 1,:,:,:]], 3)
-    #                 # save_image(save_imgs_compare, os.path.join(test_compare_save_path, '{:s}_{:0>3.2f}_testRealRaw_testFakeExp.png'.format(test_name[i], self.args.pretrained_model)))
-    #
-    #             elapsed = time.time() - start_time
-    #             elapsed = str(datetime.timedelta(seconds=elapsed))
-    #             # if test_step % self.args.info_step == 0:
-    #             #     pbar.write("=== Elapse:{}, Save {:>3d}-th test_fake_exp images into {} ===".format(elapsed, test_step, test_save_path))
-    #
-    #             test['test/testFakeExp'] = denorm(test_real_raw.detach().cpu())
-    #
-    #             test['test_compare/testRealRaw_testFakeExp'] = torch.cat([denorm(test_real_raw.cpu()), denorm(test_real_raw.detach().cpu())], 3)
-    #
-    #             # pbar.update(1)
-    #
-    #             # if self.args.use_tensorboard:
-    #             #     for tag, images in test.items():
-    #             #         self.logger.images_summary(tag, images, test_step + 1)
-    #
-    #         # if self.args.is_test_nima:
-    #         #     self.nima_result_save_path = './results/nima_test_results_PairLIE_SICE/'
-    #         #     curr_nima = calc_nima(test_save_path, self.nima_result_save_path,  199)
-    #         #     print("====== Avg. NIMA: {:>.4f} ======".format(curr_nima))
-    #         #
-    #         # if self.args.is_test_psnr_ssim:
-    #         #     self.psnr_save_path = './results/psnr_test_results_PairLIE_SICE/'
-    #         #     curr_psnr = calc_psnr(test_save_path, self.args.test_label_dir, self.psnr_save_path, 199)
-    #         #     print("====== Avg. PSNR: {:>.4f} dB ======".format(curr_psnr))
-    #         #
-    #         #     self.ssim_save_path = './results/ssim_test_results_PairLIE_SICE/'
-    #         #     curr_ssim = calc_ssim(test_save_path, self.args.test_label_dir, self.ssim_save_path, 199)
-    #         #     print("====== Avg. SSIM: {:>.4f}  ======".format(curr_ssim))
+                self.ssim_save_path = './results/ssim_test_results/' 
+                curr_ssim = calc_ssim(test_save_path, self.args.test_label_dir, self.ssim_save_path, self.args.pretrained_model)
+                print("====== Avg. SSIM: {:>.4f}  ======".format(curr_ssim))
+
 
 
     """define some functions"""
