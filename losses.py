@@ -9,8 +9,7 @@ import os
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 from math import pi
 from torchvision.models import VGG19_Weights
-# python main.py --mode train --version UEGAN-FiveK --use_tensorboard True --is_test_nima True --is_test_psnr_ssim True
-# python main.py --mode test --version UEGAN-FiveK --pretrained_model 92 --is_test_nima True --is_test_psnr_ssim True
+
 
 
 class PerceptualLoss(nn.Module):
