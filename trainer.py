@@ -1,8 +1,5 @@
 #-*- coding:utf-8 -*
 import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-
 import time
 import torch
 import datetime
@@ -16,8 +13,7 @@ from metrics.CalcPSNR import calc_psnr
 from metrics.CalcSSIM import calc_ssim
 from tqdm import *
 from data_loader import InputFetcher
-# === The number of parameters of the above model [Generator] is [23658797] or [23.6588M] ===
-# === The number of parameters of the above model [Discriminator] is [4633632] or [4.6336M] ===
+
 
 class Trainer(object):
     def __init__(self, loaders, args):
@@ -90,48 +86,46 @@ class Trainer(object):
             self.real_raw, self.real_exp, self.real_raw_name = input.img_raw, input.img_exp, input.img_name
 
             # forward
-            self.fake_exp = self.G(self.real_raw)  #将低质量图像输入到生成器 self.G，输出增强后的假图像 fake_exp
-            self.fake_exp_store = self.fake_exp_pool.query(self.fake_exp) #将生成的假图像放入池中，用于避免模式崩溃，池化技术是 GAN 训练中常用的技巧。
+            self.fake_exp = self.G(self.real_raw)  
+            self.fake_exp_store = self.fake_exp_pool.query(self.fake_exp) 
 
             # update D
             self.d_optimizer.zero_grad()
-            real_exp_preds = self.D(self.real_exp) #通过判别器对真实的增强图像进行预测。
-            fake_exp_preds = self.D(self.fake_exp_store.detach()) #通过判别器对生成的假图像进行预测，并使用 .detach() 阻止梯度传播，因为这是生成器的目标，而不是判别器
-            d_loss = self.criterionGAN(real_exp_preds, fake_exp_preds, None, None, for_discriminator=True) #计算判别器的损失，通常是二分类交叉熵损失。这里传入真实和假图像的预测结果，计算 d_loss
-            # 如果启用了adv_input，则在判别器中加入额外的输入损失：
-            # 通过判别器对原始低质量图像进行预测。
-            # 将该损失加到d_loss中，进一步训练判别器区分原图与伪图
+            real_exp_preds = self.D(self.real_exp) 
+            fake_exp_preds = self.D(self.fake_exp_store.detach()) 
+            d_loss = self.criterionGAN(real_exp_preds, fake_exp_preds, None, None, for_discriminator=True) 
+            
             if self.args.adv_input:
                 input_preds = self.D(self.real_raw)
                 d_loss += self.criterionGAN(real_exp_preds, input_preds, None, None, for_discriminator=True)
-            d_loss.backward() #反向传播计算梯度
-            self.d_optimizer.step() #使用梯度更新判别器的参数。
-            self.d_loss = d_loss.item() #将 d_loss 的值保存为 self.d_loss，便于后续记录或打印
+            d_loss.backward() 
+            self.d_optimizer.step() 
+            self.d_loss = d_loss.item() 
 
             # update G
-            self.g_optimizer.zero_grad() #清除生成器优化器的梯度。
+            self.g_optimizer.zero_grad() 
             real_exp_preds = self.D(self.real_exp)
-            fake_exp_preds = self.D(self.fake_exp)  #再次通过判别器预测真实和假图像，目标是用生成器迷惑判别器，让生成的假图像被判定为真实图像
+            fake_exp_preds = self.D(self.fake_exp)  
 
-            # 计算生成器的对抗损失（g_adv_loss），使得生成的假图像尽量通过判别器
+            
             g_adv_loss = self.args.lambda_adv * self.criterionGAN(real_exp_preds, fake_exp_preds, None, None, for_discriminator=False)
-            self.g_adv_loss = g_adv_loss.item() #将 g_adv_loss 的值保存为 self.g_adv_loss，便于后续记录或打印
-            g_loss = g_adv_loss #初始的生成器损失就是对抗损失 g_adv_loss
+            self.g_adv_loss = g_adv_loss.item() 
+            g_loss = g_adv_loss 
 
-            # 计算感知损失g_percep_loss，该损失用于让生成器生成的图像在高层特征上更接近真实图像
+           
             g_percep_loss = self.args.lambda_percep * self.criterionPercep((self.fake_exp+1.)/2., (self.real_raw+1.)/2.)
             self.g_percep_loss = g_percep_loss.item()
-            g_loss += g_percep_loss  #将感知损失加到生成器的总损失中
+            g_loss += g_percep_loss  
 
-            # 计算重建损失：将真实增强图像输入生成器，并计算与原图之间的重建损失
+           
             self.real_exp_idt = self.G(self.real_exp)
             g_idt_loss = self.args.lambda_idt * self.criterionIdt(self.real_exp_idt, self.real_exp)
             self.g_idt_loss = g_idt_loss.item()
-            g_loss += g_idt_loss #将重建损失加到生成器的总损失中
+            g_loss += g_idt_loss 
 
-            g_loss.backward()  # 反向传播生成器的梯度。
-            self.g_optimizer.step()  # 使用梯度更新生成器的参数。
-            self.g_loss = g_loss.item()  # 将 g_loss 的值保存为 self.g_loss，便于后续记录或打印
+            g_loss.backward()  
+            self.g_optimizer.step()
+            self.g_loss = g_loss.item() 
 
             # print info and save models
             self.print_info(step, total_steps, pbar)
@@ -142,7 +136,7 @@ class Trainer(object):
             # validation
             self.model_validation(step)
             
-            # learning rate update  每轮结束时，更新学习率，使用学习率调度器
+            # learning rate update  
             if (step+1) % self.train_steps_per_epoch == 0:
                 current_epoch = step // self.train_steps_per_epoch
                 self.lr_scheduler_g.step()
