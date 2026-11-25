@@ -13,12 +13,12 @@ from data_loader import get_train_loader, get_test_loader
 
 
 def main(args):
-    # for fast training.
+    
     torch.backends.cudnn.benchmark = True
     # if args.mode == 'train':
     #     torch.backends.cudnn.benchmark = True  # 训练时可以用
     # else:
-    #     torch.backends.cudnn.benchmark = False  # ✅ 测试时必须关闭
+    #     torch.backends.cudnn.benchmark = False  
     #     torch.backends.cudnn.deterministic = True
     # setup_seed(args.seed)
     
